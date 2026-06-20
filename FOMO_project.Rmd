@@ -1,0 +1,16 @@
+---
+title: "FOMO_R_project"
+output: html_document
+date: "2026-06-07"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Chương 1: EDA 
+# Chương 2: Path Analysis / Mediation 
+# Chương 3: Clustering K-Means 
+# Chương 4: Random Forest (Thành viên 1)
+# Chương 5: Logistic Regression 
+# Chương 6: So sánh mô hình
