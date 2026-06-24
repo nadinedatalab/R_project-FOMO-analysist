@@ -1,38 +1,78 @@
+# Mục tiêu: Phân khúc khách hàng theo hành vi số
+# Unsupervised Learning — Clustering
+
 library(cluster)
 library(factoextra)
+library(ggplot2)
 
+#  1. LOAD DATA 
 train <- read.csv("data/cleaned_research_train.csv")
 
-# Chọn biến và chuẩn hóa (QUAN TRỌNG - K-Means nhạy với scale)
+
+# 2. CHỌN BIẾN VÀ CHUẨN HÓA
+# 5 biến được chọn dựa trên kết quả Path Analysis và Logistic Regression
 vars_cluster <- train[, c("daily_time_spent", "fomo_index", 
                           "scarcity_exposure", "Conscientiousness_Score",
                           "purchase_prob")]
 
+# Chuẩn hóa z-score (bắt buộc vì K-Means dùng khoảng cách Euclidean)
 vars_scaled <- scale(vars_cluster)
 
-# Bước 1: Tìm K tối ưu bằng Elbow method
-fviz_nbclust(vars_scaled, kmeans, method = "wss", k.max = 10) +
+
+#  3. TÌM K TỐI ƯU BẰNG ELBOW METHOD
+elbow_plot <- fviz_nbclust(vars_scaled, kmeans, 
+                           method = "wss", k.max = 10) +
   labs(title = "Elbow Method - Chọn số cụm K")
 
-set.seed(123)  # đảm bảo kết quả tái lập được
+print(elbow_plot)
+
+# Lưu biểu đồ Elbow
+ggsave("output/elbow_method.png", 
+       plot = elbow_plot, width = 6, height = 4, dpi = 300)
+
+
+#  4. CHẠY K-MEANS VỚI K=4 
+set.seed(123)  # Đảm bảo kết quả tái lập được
 
 km_result <- kmeans(vars_scaled, centers = 4, nstart = 25)
 
-# Xem số người mỗi cụm
+# Số người mỗi cụm
 table(km_result$cluster)
 
-# Gán cụm vào data gốc
+# Gán nhãn cụm vào data gốc
 train$cluster <- as.factor(km_result$cluster)
 
-# Xem đặc điểm trung bình từng cụm (chưa chuẩn hóa - dễ đọc)
-aggregate(train[, c("daily_time_spent", "fomo_index", 
-                    "scarcity_exposure", "Conscientiousness_Score",
-                    "purchase_prob")], 
-          by = list(cluster = train$cluster), 
-          FUN = mean)
-fviz_cluster(km_result, data = vars_scaled,
-             geom = "point",
-             ellipse.type = "convex",
-             palette = "jco",
-             ggtheme = theme_minimal()) +
+
+# 5. ĐẶC ĐIỂM TRUNG BÌNH TỪNG CỤM
+cluster_profile <- aggregate(
+  train[, c("daily_time_spent", "fomo_index", 
+            "scarcity_exposure", "Conscientiousness_Score",
+            "purchase_prob")], 
+  by  = list(cluster = train$cluster), 
+  FUN = mean
+)
+print(round(cluster_profile, 3))
+
+# Đặt tên phân khúc dựa trên đặc điểm
+# Cluster 2: FOMO Buyer     (daily_time cao, fomo cao, purchase_prob cao nhất)
+# Cluster 1: Engaged Shopper (fomo khá cao, purchase_prob cao)
+# Cluster 3: Casual Browser  (fomo thấp, purchase_prob trung bình)
+# Cluster 4: Rational Saver  (Conscientiousness cao, purchase_prob thấp nhất)
+
+
+#  6. VẼ BIỂU ĐỒ PHÂN CỤM
+cluster_plot <- fviz_cluster(
+  km_result, 
+  data         = vars_scaled,
+  geom         = "point",
+  ellipse.type = "convex",
+  palette      = "jco",
+  ggtheme      = theme_minimal()
+) +
   labs(title = "Phân khúc khách hàng theo K-Means (K=4)")
+
+print(cluster_plot)
+
+# Lưu biểu đồ Cluster
+ggsave("output/kmeans_cluster.png", 
+       plot = cluster_plot, width = 7, height = 5, dpi = 300)
