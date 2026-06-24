@@ -49,7 +49,8 @@ confusionMatrix(pred_class, test$purchased, positive = "Yes")
 roc_logit <- roc(test$purchased, pred_prob)
 auc(roc_logit)  # Kết quả: 0.896
 
-# 6. VẼ ROC CURVE 
+# 6. VẼ ROC CURVE
+library(pROC)
 roc_plot <- ggroc(roc_logit, colour = "#378ADD", linewidth = 1) +
   geom_abline(intercept = 1, slope = 1, 
               linetype = "dashed", color = "grey60") +
@@ -60,7 +61,6 @@ roc_plot <- ggroc(roc_logit, colour = "#378ADD", linewidth = 1) +
     y        = "Sensitivity"
   ) +
   theme_minimal()
-
 print(roc_plot)
 ggsave("output/roc_curve_logistic.png", 
        plot = roc_plot, width = 6, height = 5, dpi = 300)
