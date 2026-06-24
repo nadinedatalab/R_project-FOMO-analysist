@@ -6,14 +6,12 @@ library(caret)
 library(pROC)
 library(ggplot2)
 
-#  1. LOAD DATA 
 train <- read.csv("data/cleaned_research_train.csv")
 test  <- read.csv("data/cleaned_research_test.csv")
 
 # Chuyển purchased thành factor (bắt buộc với caret và glm)
 train$purchased <- factor(train$purchased, levels = c("No", "Yes"))
 test$purchased  <- factor(test$purchased,  levels = c("No", "Yes"))
-
 
 #  2. XÂY DỰNG MÔ HÌNH 
 model_logit <- glm(
@@ -26,9 +24,7 @@ model_logit <- glm(
   family = binomial(link = "logit")
 )
 
-# Xem hệ số hồi quy
 summary(model_logit)
-
 
 # 3. ODDS RATIO 
 odds_ratios <- exp(cbind(OR = coef(model_logit), confint(model_logit)))
@@ -45,7 +41,6 @@ pred_class <- factor(
   levels = c("No", "Yes")
 )
 
-
 # 5. ĐÁNH GIÁ MÔ HÌNH 
 # Confusion Matrix (Positive = "Yes" = có mua)
 confusionMatrix(pred_class, test$purchased, positive = "Yes")
@@ -53,7 +48,6 @@ confusionMatrix(pred_class, test$purchased, positive = "Yes")
 # ROC-AUC
 roc_logit <- roc(test$purchased, pred_prob)
 auc(roc_logit)  # Kết quả: 0.896
-
 
 # 6. VẼ ROC CURVE 
 roc_plot <- ggroc(roc_logit, colour = "#378ADD", linewidth = 1) +
@@ -68,7 +62,5 @@ roc_plot <- ggroc(roc_logit, colour = "#378ADD", linewidth = 1) +
   theme_minimal()
 
 print(roc_plot)
-
-# Lưu biểu đồ vào output/
 ggsave("output/roc_curve_logistic.png", 
        plot = roc_plot, width = 6, height = 5, dpi = 300)

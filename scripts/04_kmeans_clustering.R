@@ -5,9 +5,7 @@ library(cluster)
 library(factoextra)
 library(ggplot2)
 
-#  1. LOAD DATA 
 train <- read.csv("data/cleaned_research_train.csv")
-
 
 # 2. CHỌN BIẾN VÀ CHUẨN HÓA
 # 5 biến được chọn dựa trên kết quả Path Analysis và Logistic Regression
@@ -26,10 +24,8 @@ elbow_plot <- fviz_nbclust(vars_scaled, kmeans,
 
 print(elbow_plot)
 
-# Lưu biểu đồ Elbow
 ggsave("output/elbow_method.png", 
        plot = elbow_plot, width = 6, height = 4, dpi = 300)
-
 
 #  4. CHẠY K-MEANS VỚI K=4 
 set.seed(123)  # Đảm bảo kết quả tái lập được
@@ -38,12 +34,8 @@ km_result <- kmeans(vars_scaled, centers = 4, nstart = 25)
 
 # Số người mỗi cụm
 table(km_result$cluster)
-
-# Gán nhãn cụm vào data gốc
 train$cluster <- as.factor(km_result$cluster)
 
-
-# 5. ĐẶC ĐIỂM TRUNG BÌNH TỪNG CỤM
 cluster_profile <- aggregate(
   train[, c("daily_time_spent", "fomo_index", 
             "scarcity_exposure", "Conscientiousness_Score",
@@ -59,8 +51,7 @@ print(round(cluster_profile, 3))
 # Cluster 3: Casual Browser  (fomo thấp, purchase_prob trung bình)
 # Cluster 4: Rational Saver  (Conscientiousness cao, purchase_prob thấp nhất)
 
-
-#  6. VẼ BIỂU ĐỒ PHÂN CỤM
+# VẼ BIỂU ĐỒ PHÂN CỤM
 cluster_plot <- fviz_cluster(
   km_result, 
   data         = vars_scaled,

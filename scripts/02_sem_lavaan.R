@@ -2,12 +2,9 @@
 # X = daily_time_spent, M = fomo_index, Y = purchase_prob
 
 library(lavaan)
-
-# 1. LOAD DATA 
 train <- read.csv("data/cleaned_research_train.csv")
 test  <- read.csv("data/cleaned_research_test.csv")
 
-# Kiểm tra
 nrow(train)   # 8000
 names(train)  # 22 cột
 summary(train[, c("daily_time_spent", "fomo_index", 
